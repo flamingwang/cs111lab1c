@@ -1,0 +1,7 @@
+(false && echo hi) | wc
+
+echo hi | (false && echo hi)
+
+(false || echo hi) | wc
+
+echo hi | (false || echo hi)

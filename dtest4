@@ -1,0 +1,3 @@
+echo hi | wc > hi2.txt
+
+(cat) < hi2.txt

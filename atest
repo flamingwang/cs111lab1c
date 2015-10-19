@@ -1,0 +1,13 @@
+true && echo hi
+
+true || echo hiortrue
+
+false || echo hiorfalse
+
+(false) || echo hisuborfalse
+
+(true) || echo hisubortrue
+
+(false) && echo hisubandfalse
+
+(true) && echo hisubandtrue

@@ -1,0 +1,5 @@
+echo hi > hi.txt
+
+echo hii > hii.txt
+
+cat < hii.txt | wc

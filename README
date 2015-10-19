@@ -1,0 +1,28 @@
+CS111 Lab 1b README
+===================
+Dennis Gahm 704016107
+Sean Wang   604151638
+
+
+- Works for all devised test cases
+
+- Contains changes to lab1a code for increased robustness
+
+
+
+Limitations
+~~~~~~~~~~~
+- Multiple pipes in a command are not supported. This is alright since
+TAs have stated that it will not tested for.
+
+- Single quotes and double quotes are invalid tokens. See "Shell syntax
+subset" section of the spec.
+
+Approach
+~~~~~~~~
+One challenge was managing all the child processes so that
+we don't create too many and we exit all of them.
+We created a _nf function for execute_command and execute,
+which stands for "no fork", which means it doesn't create a
+child process.  Although there is duplicate code because of this,
+it still works.

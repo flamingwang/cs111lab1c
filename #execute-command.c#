@@ -1,0 +1,240 @@
+// UCLA CS 111 Lab 1 command execution
+
+#include "command.h"
+#include "command-internals.h"
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <stdio.h>
+#include <error.h>
+#include <stdlib.h>
+#include <string.h> //for strcmp function
+
+static bool DEBUG = true;
+
+/* FIXME: You may need to add #include directives, macro definitions,
+   static function definitions, etc.  */
+
+void execute_command_nf (command_t c, int time_travel);
+
+int
+command_status (command_t c)
+{
+  return c->status;
+}
+
+//Execute simple command
+void execute (command_t c) {
+  int child_status;
+  int pid = fork();
+
+   
+  if (pid == 0) {
+   if (c->input != NULL)
+      freopen(c->input, "r", stdin);
+    if (c->output != NULL)
+      freopen(c->output, "w", stdout);    
+    //printf("command: %s %s\n", c->u.word[0], c->u.word[1]);  
+   
+   if(!strcmp(c->u.word[0], "exec"))
+     execvp(c->u.word[1], c->u.word+1);
+   
+    execvp(c->u.word[0], c->u.word);
+    fclose(stdin);
+    fclose(stdout);
+  }
+  else {
+    int return_pid = waitpid(pid, &child_status, 0);
+    c->status = WEXITSTATUS(child_status);
+  }
+}
+
+void execute_nf (command_t c) {
+  if (c->input != NULL)
+    freopen(c->input, "r", stdin);
+  if (c->output != NULL)
+    freopen(c->output, "w", stdout);    
+  execvp(c->u.word[0], c->u.word);
+  fclose(stdin);
+  fclose(stdout);
+}
+
+void execute_pipe (command_t c, int time_travel) {
+  int child_status;
+  int first_pid, second_pid, return_pid;
+  int mypipe[2];
+  pipe(mypipe);
+  first_pid = fork();
+  if (first_pid == 0) {
+    close(mypipe[0]);
+    dup2(mypipe[1], 1);
+    close(mypipe[1]);
+    execute_command_nf(c->u.command[0], time_travel);
+  }
+  else {
+    second_pid = fork();
+    if (second_pid == 0) {
+      close(mypipe[1]);
+      dup2(mypipe[0], 0);
+      close(mypipe[0]);
+      execute_command_nf(c->u.command[1], time_travel);
+    }
+    else {
+      close(mypipe[0]);
+      close(mypipe[1]);
+      return_pid = waitpid(first_pid, &child_status, 0);
+      return_pid = waitpid(second_pid, &child_status, 0);
+      c->status = WEXITSTATUS(child_status);
+    }
+  } 
+  /*
+  //first_pid = fork();
+  //if (first_pid == 0) {
+  close(mypipe[0]);
+  dup2(mypipe[1], 1);
+  close(mypipe[1]);
+  execute_command_nf(c->u.command[0], time_travel);
+  //}
+  //else {
+  //second_pid = fork();
+  //if (second_pid == 0) {
+  close(mypipe[1]);
+  dup2(mypipe[0], 0);
+  close(mypipe[0]);
+  execute_command_nf(c->u.command[1], time_travel);
+  //}
+  //else {
+  close(mypipe[0]);
+  close(mypipe[1]);
+  return_pid = waitpid(first_pid, &child_status, 0);
+    return_pid = waitpid(second_pid, &child_status, 0);
+    c->status = WEXITSTATUS(child_status);
+    }
+    }
+  */
+}
+
+void
+execute_command (command_t c, int time_travel)
+{
+  /* FIXME: Replace this with your implementation.  You may need to
+     add auxiliary functions and otherwise modify the source code.
+     You can also use external functions defined in the GNU C Library.  */
+  int pid;
+  int child_status;
+  int return_pid;
+  switch(c->type) {
+  case PIPE_COMMAND:
+    execute_pipe(c, time_travel);
+    break;
+  case SIMPLE_COMMAND:
+    execute(c);
+    break;
+  case AND_COMMAND:
+    execute_command(c->u.command[0], time_travel);
+    if (c->u.command[0]->status == 0) {
+      execute_command(c->u.command[1], time_travel);
+      c->status = c->u.command[1]->status;
+    }
+    else {
+      c->status = c->u.command[0]->status;
+    }
+    break;
+  case OR_COMMAND:
+    execute_command(c->u.command[0], time_travel);
+    if (c->u.command[0]->status == 0)
+      c->status = 0;
+    else {
+      execute_command(c->u.command[1], time_travel);
+      c->status = c->u.command[1]->status;
+    }
+      
+    break;
+  case SEQUENCE_COMMAND:
+    execute_command(c->u.command[0], time_travel);
+    execute_command(c->u.command[1], time_travel);
+    c->status = 0;
+    break;
+  case SUBSHELL_COMMAND:
+    pid = fork();
+    if (pid == 0) {
+      if (c->input != NULL)
+	freopen(c->input, "r", stdin);
+      if (c->output != NULL)
+	freopen(c->output, "w", stdout);
+      execute_command(c->u.subshell_command, time_travel);    
+      c->status = c->u.subshell_command->status;
+      exit(c->status);
+    }
+    else {
+      return_pid = waitpid(pid, &child_status, 0);
+      c->status = WEXITSTATUS(child_status);
+  
+      //exit(0);
+    }
+    break;
+  }
+  //error (1, 0, "command execution not yet implemented");
+}
+
+void
+execute_command_nf (command_t c, int time_travel)
+{
+  /* FIXME: Replace this with your implementation.  You may need to
+     add auxiliary functions and otherwise modify the source code.
+     You can also use external functions defined in the GNU C Library.  */
+  int pid;
+  int child_status;
+  int return_pid;
+  switch(c->type) {
+  case PIPE_COMMAND:
+    execute_pipe(c, time_travel);
+    break;
+  case SIMPLE_COMMAND:
+    execute_nf(c);
+    break;
+  case AND_COMMAND:
+    execute_command(c->u.command[0], time_travel);
+    if (c->u.command[0]->status == 0) {
+      execute_command(c->u.command[1], time_travel);
+      c->status = c->u.command[1]->status;
+    }
+    else {
+      c->status = c->u.command[0]->status;
+    }
+    break;
+  case OR_COMMAND:
+    execute_command(c->u.command[0], time_travel);
+<    if (c->u.command[0]->status == 0)
+      c->status = 0;
+    else {
+      execute_command(c->u.command[1], time_travel);
+      c->status = c->u.command[1]->status;
+    }
+      
+    break;
+  case SEQUENCE_COMMAND:
+    execute_command(c->u.command[0], time_travel);
+    execute_command(c->u.command[1], time_travel);
+    c->status = 0;
+    break;
+  case SUBSHELL_COMMAND:
+    //pid = fork();
+    //if (pid == 0) {
+      if (c->input != NULL)
+	freopen(c->input, "r", stdin);
+      if (c->output != NULL)
+	freopen(c->output, "w", stdout);
+      execute_command_nf(c->u.subshell_command, time_travel);    
+      c->status = c->u.subshell_command->status;
+      exit(c->status);
+      //}
+      //else {
+      //return_pid = waitpid(pid, &child_status, 0);
+      //exit(0);
+      //}
+    
+    break;
+  }
+  //error (1, 0, "command execution not yet implemented");
+}

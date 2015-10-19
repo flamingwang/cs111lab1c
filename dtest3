@@ -1,0 +1,3 @@
+echo hiii | wc > hi2.txt
+
+wc < hi2.txt

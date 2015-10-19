@@ -1,0 +1,10 @@
+#This should error if foo.txt DNE
+(cat) < foo.txt > foo2.txt
+
+ls | (wc)
+
+ls | wc
+
+(ls) | (wc)
+
+exec echo a

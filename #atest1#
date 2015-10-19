@@ -1,0 +1,5 @@
+(true) && echo hisubandtrue
+
+(false || true) && echo hisubandfalse
+
+(true && false) && echo hisubandtrue
