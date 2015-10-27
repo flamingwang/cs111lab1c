@@ -11,6 +11,7 @@
 
 
 int lin_num = 1;//global for line numbers
+int num_trees = 0;//global for number of command trees
 
 // Returns true if character is valid based on the spec
 bool is_valid_char(char character) {
@@ -1236,6 +1237,7 @@ command_stream_t make_advanced_stream(command_stream_t basic_stream) {
 
       finish_up = false;
       add_command(pop(com_stack),cStream);
+      num_trees++;
     }
     cmd = traverse(basic_stream);
   }
@@ -1259,8 +1261,11 @@ command_stream_t make_advanced_stream(command_stream_t basic_stream) {
   // Reached end of stream
   // Pop the command_t into the command stream
   add_command(pop(com_stack),cStream);
+  num_trees++;
   reset_traverse(cStream);
   //print_stream(cStream);
+  
+  fprintf(stderr, "Number of command trees is: %d\n",num_trees);
   return cStream;
 }
 

@@ -10,12 +10,57 @@
 #include <stdlib.h>
 #include <string.h> //for strcmp function
 
+
+// Graph Implementation
+// ===================================================================
+
+typedef struct graph_node* graph_node_t;
+struct graph_node {
+  command_t cmd; // Command inside of the node
+  
+  graph_node_t* dependencies; // Array of graph node pointers indicating dependencies
+  
+  char** read_list; // Read List
+  
+  char** write_list; // Write List
+};
+
+typedef struct command_graph* command_graph_t;
+struct command_graph {
+  
+  int size; // Number of graph nodes in graph
+  
+  graph_node_t* nodes;// Array of graph node pointers, indicates all nodes belonging to
+  //this graph
+  
+  int num_stages; // Number of execution stages
+  
+  graph_node_t** staged_commands;
+  // Array of arrays of graph node pointers
+  // 1. Each array of graph node pointers is the commands that should be executed at
+  //    that particular stage.
+  // 2. Each array of graph node pointers also has a NULL pointer after its last
+  //    command so you know where to end
+  // 3. Index of each array of graph node pointers is the stage it should be executed.
+  //    For example: staged_commands[0] is an array of graph node pointers indicating 
+  //    which commands should be executed at stage 1. staged_commands[1] => stage 2,
+  //    ... staged_commands[num_stages-1] => final stage.
+};
+
+//void test_graph(){
+//  // Test 
+//}
+
+// End of Graph Implementation
+// ===================================================================
+
 static bool DEBUG = true;
 
 /* FIXME: You may need to add #include directives, macro definitions,
    static function definitions, etc.  */
 
 void execute_command_nf (command_t c, int time_travel);
+
 
 char** createReadList(command_t c)
 {
@@ -55,6 +100,7 @@ char** createReadList(command_t c)
   }
   
 }
+
 
 int
 command_status (command_t c)
