@@ -54,6 +54,8 @@ main (int argc, char **argv)
 
   command_t last_command = NULL;
   command_t command;
+
+
   while ((command = read_command_stream (command_stream)))
     {
       if (print_tree)
@@ -63,8 +65,26 @@ main (int argc, char **argv)
 	}
       else
 	{
-	  last_command = command;
-	  execute_command (command, time_travel);
+	  if (time_travel) {
+	    char** rl = createReadList(command);
+	    int i = 0;
+	    printf("read list: ");
+	    while (rl[i] != NULL) {
+	      printf("%s ", rl[i]);
+	      i++;
+	    }
+	    char** wl = createWriteList(command);
+	    i = 0;
+	    printf("write list: ");
+	    while (wl[i] != NULL) {
+	      printf("%s ", wl[i]);
+	      i++;
+	    }
+	  }
+	  else {
+	    last_command = command;
+	    execute_command (command, time_travel);
+	  }
 	}
     }
 

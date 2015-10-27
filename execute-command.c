@@ -61,44 +61,60 @@ static bool DEBUG = true;
 
 void execute_command_nf (command_t c, int time_travel);
 
+void appendRL(char** rl, char** rl2)
+{
+  int i = 0;
+  while (rl[i] != NULL) {
+    i++;
+  }
+  int i2 = 0;
+  while (rl2[i2] != NULL) {
+    rl[i + i2] = rl2[i2];
+  }
+}
 
 char** createReadList(command_t c)
 {
+  char** readList = malloc(50);
   switch(c->type) {
   case PIPE_COMMAND:
   case OR_COMMAND:
   case SEQUENCE_COMMAND:
   case AND_COMMAND:
+    appendRL(readList, createReadList(c->u.command[0]));
+    appendRL(readList, createReadList(c->u.command[1]));
     break;
-  case SIMPLE_COMMAND:
-    execute_nf(c);
+  case SUBSHELL_COMMAND:
+    readList[0] = c->input;
+    appendRL(readList, createReadList(c->u.subshell_command));
     break;
-    execute_command(c->u.command[0], time_travel);
-    if (c->u.command[0]->status == 0) {
-      execute_command(c->u.command[1], time_travel);
-      c->status = c->u.command[1]->status;
-    }
-    else {
-      c->status = c->u.command[0]->status;
-    }
-    break;
-    execute_command(c->u.command[0], time_travel);
-    if (c->u.command[0]->status == 0)
-      c->status = 0;
-    else {
-      execute_command(c->u.command[1], time_travel);
-      c->status = c->u.command[1]->status;
-    }
-      
-    break;
-    execute_command(c->u.command[0], time_travel);
-    execute_command(c->u.command[1], time_travel);
-    c->status = 0;
-    break;
-  case SUBSHELL_COMMAND:    
+  case SIMPLE_COMMAND: 
+    readList[0] = c->input;
     break;
   }
-  
+  return readList;
+}
+
+char** createWriteList(command_t c)
+{
+  char** writeList = malloc(50);
+  switch(c->type) {
+  case PIPE_COMMAND:
+  case OR_COMMAND:
+  case SEQUENCE_COMMAND:
+  case AND_COMMAND:
+    appendRL(writeList, createReadList(c->u.command[0]));
+    appendRL(writeList, createReadList(c->u.command[1]));
+    break;
+  case SUBSHELL_COMMAND:
+    writeList[0] = c->output;
+    appendRL(writeList, createReadList(c->u.subshell_command));
+    break;
+  case SIMPLE_COMMAND: 
+    writeList[0] = c->output;
+    break;
+  }
+  return writeList;
 }
 
 
