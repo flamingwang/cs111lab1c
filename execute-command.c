@@ -17,6 +17,45 @@ static bool DEBUG = true;
 
 void execute_command_nf (command_t c, int time_travel);
 
+char** createReadList(command_t c)
+{
+  switch(c->type) {
+  case PIPE_COMMAND:
+  case OR_COMMAND:
+  case SEQUENCE_COMMAND:
+  case AND_COMMAND:
+    break;
+  case SIMPLE_COMMAND:
+    execute_nf(c);
+    break;
+    execute_command(c->u.command[0], time_travel);
+    if (c->u.command[0]->status == 0) {
+      execute_command(c->u.command[1], time_travel);
+      c->status = c->u.command[1]->status;
+    }
+    else {
+      c->status = c->u.command[0]->status;
+    }
+    break;
+    execute_command(c->u.command[0], time_travel);
+    if (c->u.command[0]->status == 0)
+      c->status = 0;
+    else {
+      execute_command(c->u.command[1], time_travel);
+      c->status = c->u.command[1]->status;
+    }
+      
+    break;
+    execute_command(c->u.command[0], time_travel);
+    execute_command(c->u.command[1], time_travel);
+    c->status = 0;
+    break;
+  case SUBSHELL_COMMAND:    
+    break;
+  }
+  
+}
+
 int
 command_status (command_t c)
 {
