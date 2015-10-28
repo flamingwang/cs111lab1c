@@ -9,6 +9,8 @@
 #include <error.h>
 #include <stdlib.h>
 #include <string.h> //for strcmp function
+#include "alloc.h"
+
 
 
 // Graph Implementation
@@ -23,6 +25,9 @@ struct graph_node {
   char** read_list; // Read List
   
   char** write_list; // Write List
+  
+  int stage; // which stage of execution the node is in (initialize to 0 in create_graph_nodes)
+  
 };
 
 typedef struct command_graph* command_graph_t;
@@ -48,16 +53,71 @@ struct command_graph {
 };
 
 
-command_graph_t create_graph_nodes(command_stream_t cs)
+command_graph_t create_graph_nodes(command_stream_t cstream)
 {
-  command_graph_t cg = checked_malloc(sizeof(command_graph);
+  int ii; //iterator
   
-  // Allocate Nodes
-  // Fill Nodes
+  command_graph_t cgraph = (command_graph_t) checked_malloc(sizeof(struct command_graph));
+  cgraph->size = num_trees;
+  cgraph->nodes = (graph_node_t*) checked_malloc(sizeof(graph_node_t) * cgraph->size);
+  
+  for(ii=0; ii!= cgraph->size; ii++){
+    
+    //allocate
+    graph_node_t gnode = (graph_node_t) checked_malloc(sizeof(struct graph_node));
+
+    //cmd field
+    gnode->cmd = read_command_stream (cstream);
+    
+    //do dependencies in another function, NULL for now
+    gnode->dependencies = NULL;
+    
+    //read_list field
+    gnode->read_list = createReadList(gnode->cmd);
+    
+    //write_list field
+    gnode->write_list = createWriteList(gnode->cmd);
+    
+    //stage field
+    gnode->stage = 0;
+    
+    //insert node into graph
+    cgraph->nodes[ii] = gnode;
+    
+  }
+  
+  //Test info
+  for(ii=0; ii!= cgraph->size; ii++){
+    dump_graph_node(cgraph->nodes[ii]);
+    fprintf(stderr, "\n");
+  }
+  //Test info
+  
+  
+  return cgraph;
 }
-//void test_graph(){
-//  // Test 
-//}
+
+//For debugging nodes
+void dump_graph_node(graph_node_t gnode){
+  int ii;
+  fprintf(stderr, "Command is: %d\n", gnode->cmd->type);
+  fprintf(stderr, "Stage is: %d\n",gnode->stage);
+  
+  
+  fprintf(stderr, "Read List is: \n");
+  for(ii=0; gnode->read_list[ii] != NULL; ii++){
+    fprintf(stderr,"%s",gnode->read_list[ii]);
+    fprintf(stderr, "\n");
+    }
+    
+  fprintf(stderr, "\n");
+    
+  fprintf(stderr, "Write List is: \n");
+    for(ii=0; gnode->write_list[ii] != NULL; ii++){
+    fprintf(stderr,"%s",gnode->write_list[ii]);
+    fprintf(stderr, "\n");
+    }
+}
 
 // End of Graph Implementation
 // ===================================================================
