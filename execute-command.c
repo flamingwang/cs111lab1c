@@ -19,6 +19,8 @@ struct graph_node {
   command_t cmd; // Command inside of the node
   
   graph_node_t* dependencies; // Array of graph node pointers indicating dependencies
+
+  int depSize;
   
   char** read_list; // Read List
   
@@ -45,6 +47,7 @@ struct command_graph {
   //    For example: staged_commands[0] is an array of graph node pointers indicating 
   //    which commands should be executed at stage 1. staged_commands[1] => stage 2,
   //    ... staged_commands[num_stages-1] => final stage.
+  int* stageSize;
 };
 
 //void test_graph(){
@@ -58,6 +61,77 @@ static bool DEBUG = true;
 
 /* FIXME: You may need to add #include directives, macro definitions,
    static function definitions, etc.  */
+
+void createStagedCommands(command_graph_t cg)
+{
+  cg->staged_commands = malloc(50 * sizeof(graph_node_t*));
+  cg->stageSize = malloc(50 * sizeof(int));
+  cg->staged_commands[0][0] = cg->nodes[0];
+  cg->nodes[0]->stage = 1;
+  cg->stageSize[0]++;
+
+  int i = 1;
+  while (cg->nodes[i] != NULL) {
+    if (cg->nodes[i]->dependencies[0] == NULL){
+      cg->staged_commands[0][cg->stageSize[0]++] = cg->nodes[i];
+      cg->nodes[i]->stage = 1;
+    }
+    else {
+      int i2 = 0;
+      int maxStage = 0;
+      for (; cg->nodes[i]->dependencies[i2] != NULL; i2++) {
+	if (cg->nodes[i]->dependencies[i2]->stage > maxStage)
+	  maxStage = cg->nodes[i]->dependencies[i2]->stage;
+      }
+      cg->staged_commands[maxStage][cg->stageSize[maxStage]++] = cg->nodes[i];
+      cg->nodes[i]->stage = maxStage + 1;
+    }
+    i++;
+  }
+}
+
+bool isMatch(char** a, char** b)
+{
+  int i = 0;
+  while (a != NULL) {
+    int i2 = 0;
+    while (b != NULL) {
+      if (strcmp(a[i], b[i2]) == 0)
+	return true;
+      i2++;
+    }
+    i++;
+  }
+  return false;
+}
+
+void createDependencies(command_graph_t cg)
+{
+  int i = 0;
+  int i2;
+  while (cg->nodes[i] != NULL) {
+    i2 = 0;
+    while (i2 != i) {
+      //RAW
+      if (isMatch(cg->nodes[i]->read_list, cg->nodes[i2]->write_list)) {
+	cg->nodes[i]->dependencies[cg->nodes[i]->depSize] = cg->nodes[i2];
+	cg->nodes[i]->depSize++;
+      }
+      //WAR
+      if (isMatch(cg->nodes[i]->write_list, cg->nodes[i2]->read_list)) {
+	cg->nodes[i]->dependencies[cg->nodes[i]->depSize] = cg->nodes[i2];
+	cg->nodes[i]->depSize++;
+      }
+      //WAW
+      if (isMatch(cg->nodes[i]->write_list, cg->nodes[i2]->write_list)) {
+	cg->nodes[i]->dependencies[cg->nodes[i]->depSize] = cg->nodes[i2];
+	cg->nodes[i]->depSize++;
+      }
+      i2++;
+    }
+    i++;
+  }
+}
 
 void execute_command_nf (command_t c, int time_travel);
 char** createReadList(command_t c);
