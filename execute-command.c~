@@ -50,8 +50,6 @@ struct command_graph {
 
 command_graph_t create_graph_nodes(command_stream_t cs)
 {
-  command_graph_t cg = checked_malloc(sizeof(command_graph);
-  
   // Allocate Nodes
   // Fill Nodes
 }
