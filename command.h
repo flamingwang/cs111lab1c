@@ -8,8 +8,10 @@
 #define LEFT_ARROW_COMMAND 7
 
 
-
-
+/////////////////////////////////////////////////
+///////////////  Globals           //////////////
+/////////////////////////////////////////////////
+extern int num_trees;
 
 /////////////////////////////////////////////////
 ///////////////  Token Definition  //////////////
@@ -76,6 +78,12 @@ void free_stream(command_stream_t m_command_stream);
 /////////////////////////////////////////////////
 char** createReadList(command_t c);
 char** createWriteList(command_t c);
+
+typedef struct command_graph* command_graph_t;
+command_graph_t create_graph_nodes(command_stream_t cstream);
+
+typedef struct graph_node* graph_node_t;
+void dump_graph_node(graph_node_t gnode);
 
 /////////////////////////////////////////////////
 ///////////////  Stack Definition  //////////////

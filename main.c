@@ -56,6 +56,14 @@ main (int argc, char **argv)
   command_t command;
 
 
+  //TESTING
+  if(time_travel){
+    create_graph_nodes(command_stream);
+    reset_traverse(command_stream);
+  }
+  //TESTING
+  
+  
   while ((command = read_command_stream (command_stream)))
     {
       if (print_tree)

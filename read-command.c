@@ -1262,10 +1262,10 @@ command_stream_t make_advanced_stream(command_stream_t basic_stream) {
   // Pop the command_t into the command stream
   add_command(pop(com_stack),cStream);
   num_trees++;
-  reset_traverse(cStream);
+  reset_traverse(cStream);//Ensures proper function of read_command_stream
   //print_stream(cStream);
   
-  fprintf(stderr, "Number of command trees is: %d\n",num_trees);
+  //fprintf(stderr, "Number of command trees is: %d\n",num_trees);
   return cStream;
 }
 
