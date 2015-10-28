@@ -60,6 +60,7 @@ static bool DEBUG = true;
    static function definitions, etc.  */
 
 void execute_command_nf (command_t c, int time_travel);
+char** createReadList(command_t c);
 
 void appendRL(char** rl, char** rl2)
 {
@@ -105,12 +106,12 @@ char** createWriteList(command_t c)
   case OR_COMMAND:
   case SEQUENCE_COMMAND:
   case AND_COMMAND:
-    appendRL(writeList, createReadList(c->u.command[0]));
-    appendRL(writeList, createReadList(c->u.command[1]));
+    appendRL(writeList, createWriteList(c->u.command[0]));
+    appendRL(writeList, createWriteList(c->u.command[1]));
     break;
   case SUBSHELL_COMMAND:
     writeList[0] = c->output;
-    appendRL(writeList, createReadList(c->u.subshell_command));
+    appendRL(writeList, createWriteList(c->u.subshell_command));
     break;
   case SIMPLE_COMMAND: 
     writeList[0] = c->output;
