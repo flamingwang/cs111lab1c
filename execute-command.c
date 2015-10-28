@@ -120,6 +120,7 @@ void dump_graph_node(graph_node_t gnode){
     fprintf(stderr,"%s",gnode->write_list[ii]);
     fprintf(stderr, "\n");
     }
+  fprintf(stderr, "---------- \n");
 }
 
 // End of Graph Implementation
@@ -129,6 +130,68 @@ static bool DEBUG = true;
 
 /* FIXME: You may need to add #include directives, macro definitions,
    static function definitions, etc.  */
+
+
+bool isFinished(bool* f, int size)
+{
+  int i = 0;
+  for (; i < size; i++) {
+    if (!f[i])
+      return false;
+  }
+  return true;
+}
+
+void execute_commands(command_graph_t cg)
+{
+  bool* finished;
+  int* pids;
+  finished = malloc(cg->size * sizeof(bool));
+  pids = malloc(cg->size * sizeof(int));
+  int i = 0;
+  while (!isFinished(finished, cg->size)) {
+    i = 0;
+    while (i < cg->size) {
+      if (!finished[i]) {
+	if (pids[i] == 0) {
+	  if (cg->nodes[i]->dependencies[0] == NULL) {
+	    int pid = fork();
+	    pids[i] = pid;
+	    if (pid == 0) {
+	      execute_command(cg->nodes[i]->cmd, false);
+	      exit(0);
+	    }
+	    else {
+	      int status;
+	      if (waitpid(pid, &status, WNOHANG)) {
+		pids[i] = -1;
+		finished[i] = true;
+	      }
+	    }
+	  }
+	  else {
+	    /*int i2 = 0;
+	    for (; i2 < cg->nodes[i]->depSize; i2++) {
+	      int status;
+	      if (waitpid(pids[i], &status, WNOHANG)) {
+		pids[i] = -1;
+		finished[i] = true;
+	      }   
+	      }*/
+	  }
+	}
+	else {
+	  int status;
+	  if (waitpid(pids[i], &status, WNOHANG)) {
+	    pids[i] = -1;
+	    finished[i] = true;
+	  }
+	}
+      }
+      i++;
+    }
+  }
+}
 
 void createStagedCommands(command_graph_t cg)
 {
@@ -161,9 +224,9 @@ void createStagedCommands(command_graph_t cg)
 bool isMatch(char** a, char** b)
 {
   int i = 0;
-  while (a != NULL) {
+  while (a[i] != NULL) {
     int i2 = 0;
-    while (b != NULL) {
+    while (b[i2] != NULL) {
       if (strcmp(a[i], b[i2]) == 0)
 	return true;
       i2++;
@@ -179,6 +242,7 @@ void createDependencies(command_graph_t cg)
   int i2;
   while (cg->nodes[i] != NULL) {
     i2 = 0;
+    cg->nodes[i]->dependencies = malloc(sizeof(graph_node_t) * 50);
     while (i2 != i) {
       //RAW
       if (isMatch(cg->nodes[i]->read_list, cg->nodes[i2]->write_list)) {
@@ -197,6 +261,14 @@ void createDependencies(command_graph_t cg)
       }
       i2++;
     }
+    //debug
+    /*if (DEBUG) {
+      int ii = 0;
+      fprintf(stderr, "dependencies: ");
+      for (; ii < cg->nodes[i]->depSize; ii++) {
+	fprintf(stderr, "%s ", cg->nodes[i]->dependencies[ii]->cmd->u.word[0]);
+      }
+      }*/
     i++;
   }
 }

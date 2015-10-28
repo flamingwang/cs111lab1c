@@ -58,8 +58,10 @@ main (int argc, char **argv)
 
   //TESTING
   if(time_travel){
-    create_graph_nodes(command_stream);
+    command_graph_t cg = create_graph_nodes(command_stream);
     reset_traverse(command_stream);
+    createDependencies(cg);
+    execute_commands(cg);
   }
   //TESTING
   
@@ -74,7 +76,7 @@ main (int argc, char **argv)
       else
 	{
 	  if (time_travel) {
-	    char** rl = createReadList(command);
+	    /*char** rl = createReadList(command);
 	    int i = 0;
 	    printf("read list: ");
 	    while (rl[i] != NULL) {
@@ -87,7 +89,7 @@ main (int argc, char **argv)
 	    while (wl[i] != NULL) {
 	      printf("%s ", wl[i]);
 	      i++;
-	    }
+	      }*/
 	  }
 	  else {
 	    last_command = command;
