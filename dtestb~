@@ -1,0 +1,1 @@
+wc < hi2.txt >hioutput.txt

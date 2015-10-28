@@ -70,6 +70,7 @@ void appendRL(char** rl, char** rl2)
   int i2 = 0;
   while (rl2[i2] != NULL) {
     rl[i + i2] = rl2[i2];
+    i2++;
   }
 }
 
@@ -90,6 +91,7 @@ char** createReadList(command_t c)
     break;
   case SIMPLE_COMMAND: 
     readList[0] = c->input;
+    appendRL(readList, c->u.word);
     break;
   }
   return readList;
