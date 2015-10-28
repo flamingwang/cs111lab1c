@@ -72,7 +72,7 @@ void print_stream(command_stream_t cStream);
 void free_stream(command_stream_t m_command_stream);
 
 /////////////////////////////////////////////////
-///////////////  Read / Write List  /////////////
+///////////////  Read/Write List  ///////////////
 /////////////////////////////////////////////////
 char** createReadList(command_t c);
 char** createWriteList(command_t c);
