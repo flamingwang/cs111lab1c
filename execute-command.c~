@@ -117,6 +117,7 @@ void dump_command_graph(command_graph_t cgraph){
   }
 }
 
+
 //For debugging nodes
 void dump_graph_node(graph_node_t gnode){
   int ii;

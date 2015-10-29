@@ -88,7 +88,7 @@ void dump_graph_node(graph_node_t gnode);
 void print_dependencies(graph_node_t gnode);
 void execute_commands(command_graph_t cg);
 void createDependencies(command_graph_t cg);
-
+void dump_command_graph(command_graph_t cgraph);
 
 /////////////////////////////////////////////////
 ///////////////  Stack Definition  //////////////
