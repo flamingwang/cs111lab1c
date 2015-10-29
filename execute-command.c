@@ -12,6 +12,7 @@
 #include "alloc.h"
 
 
+static bool DEBUG = false;
 
 // Graph Implementation
 // ===================================================================
@@ -99,10 +100,12 @@ command_graph_t create_graph_nodes(command_stream_t cstream)
   }
   
   //Test info
-  for(ii=0; ii!= cgraph->size; ii++){
-    dump_graph_node(cgraph->nodes[ii]);
-    fprintf(stderr, "\n");
+  if (DEBUG) {
+    for(ii=0; ii!= cgraph->size; ii++){
+      dump_graph_node(cgraph->nodes[ii]);
+      fprintf(stderr, "\n");
     }
+  }
   //Test info
   
   
@@ -162,7 +165,6 @@ void print_dependencies(graph_node_t gnode){
 // End of Graph Implementation
 // ===================================================================
 
-static bool DEBUG = true;
 
 /* FIXME: You may need to add #include directives, macro definitions,
    static function definitions, etc.  */

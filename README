@@ -1,8 +1,25 @@
-CS111 Lab 1b README
-===================
 Dennis Gahm 704016107
 Sean Wang   604151638
 
+CS111 Lab 1C README
+===================
+ - Works for simple cases
+ - Too many race conditions to verify complex cases
+
+Limitations
+~~~~~~~~~~~
+ - Executes commands multiple times when case is complex
+
+Approach
+~~~~~~~~
+We had a bool* array of finished processes to check if a process was finished.
+When waitpid of a command tree is done, we execute all the commands dependent on that command tree.
+Command graph implemented in way described in discussion.
+
+
+
+CS111 Lab 1b README
+===================
 
 - Works for all devised test cases
 
