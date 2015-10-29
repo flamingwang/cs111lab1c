@@ -1,3 +1,5 @@
 cat < foo.txt >foo.txt
 
 wc < foo.txt >hioutput.txt
+
+wc < foo.txt

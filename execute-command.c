@@ -32,6 +32,8 @@ struct graph_node {
   
   char** write_list; // Write List
   
+  int i;
+
   int stage; // which stage of execution the node is in (initialize to 0 in create_graph_nodes)
   
 };
@@ -87,6 +89,8 @@ command_graph_t create_graph_nodes(command_stream_t cstream)
     
     //stage field
     gnode->stage = 0;
+
+    gnode->i = ii;
     
     //insert node into graph
     cgraph->nodes[ii] = gnode;
@@ -146,7 +150,78 @@ bool isFinished(bool* f, int size)
   return true;
 }
 
+bool* finished;
+int* pids;
+int numNodes;
+command_graph_t comg;
+
+int getNodeID(int pid)
+{
+  int i = 0;
+  for (; i < numNodes; i++) {
+    if (pids[i] == pid)
+      return i;
+  }
+  return -1;
+}
+
+void execute_nodes(graph_node_t* nodes, int size)
+{
+  int numExecuted = 0;
+  int i = 0;
+  for (; i < size; i++) {
+    //check if all dependencies finished
+    int i2 = 0;
+    bool allFinished = true;
+    for (; i2 < nodes[i]->depSize; i2++) {
+      if (!finished[nodes[i]->dependencies[i2]->i]) {
+	allFinished = false;
+	break;
+      }
+    }
+
+    if (allFinished) {
+      numExecuted++;
+      int pid = fork();
+      if (pid == 0) {
+	execute_command(nodes[i]->cmd, false);
+	exit(0);
+      }
+      else {
+	pids[nodes[i]->i] = pid;
+      }
+    }
+  }
+  for (i = 0; i < numExecuted; i++) {
+    int status;
+    int pid = waitpid(-1, &status, 0);
+    int nodeID = getNodeID(pid);
+    //pids[nodeID] = 0; //may be helpful
+    finished[nodeID] = true;
+    execute_nodes(comg->nodes[nodeID]->dependOnMe, comg->nodes[nodeID]->depMeSize);
+    
+  }
+  
+}
+
 void execute_commands(command_graph_t cg)
+{
+  comg = cg;
+  numNodes = cg->size;
+  finished = malloc(cg->size * sizeof(bool));
+  pids = malloc(cg->size * sizeof(int));
+  int i = 0;
+  graph_node_t* noDepNodes = malloc(sizeof(graph_node_t) * 50);
+  int size;
+  for (; i < cg->size; i++) {
+    if (cg->nodes[i]->dependencies[0] == NULL) {
+      noDepNodes[size++] = cg->nodes[i];
+    }
+  }
+  execute_nodes(noDepNodes, size);
+}
+
+/*void execute_commands(command_graph_t cg)
 {
   bool* finished;
   int* pids;
@@ -175,14 +250,14 @@ void execute_commands(command_graph_t cg)
 	    }
 	  }
 	  else {
-	    /*int i2 = 0;
+	    int i2 = 0;
 	    for (; i2 < cg->nodes[i]->depSize; i2++) {
 	      int status;
 	      if (waitpid(pids[i], &status, WNOHANG)) {
 		pids[i] = -1;
 		finished[i] = true;
 	      }   
-	      }*/
+	      }
 	  }
 	}
 	else {
@@ -196,7 +271,7 @@ void execute_commands(command_graph_t cg)
       i++;
     }
   }
-}
+  }*/
 
 void createStagedCommands(command_graph_t cg)
 {
@@ -248,25 +323,26 @@ void createDependencies(command_graph_t cg)
   while (cg->nodes[i] != NULL) {
     i2 = 0;
     cg->nodes[i]->dependencies = malloc(sizeof(graph_node_t) * 50);
+    cg->nodes[i]->dependOnMe = malloc(sizeof(graph_node_t) * 50);
     while (i2 != i) {
       //RAW
       if (isMatch(cg->nodes[i]->read_list, cg->nodes[i2]->write_list)) {
 	cg->nodes[i]->dependencies[cg->nodes[i]->depSize] = cg->nodes[i2];
 	cg->nodes[i]->depSize++;
-	cg->nodes[i2]->dependencies[cg->nodes[i2]->depMeSize++] = cg->nodes[i];
+	cg->nodes[i2]->dependOnMe[cg->nodes[i2]->depMeSize++] = cg->nodes[i];
 
       }
       //WAR
       if (isMatch(cg->nodes[i]->write_list, cg->nodes[i2]->read_list)) {
 	cg->nodes[i]->dependencies[cg->nodes[i]->depSize] = cg->nodes[i2];
 	cg->nodes[i]->depSize++;
-	cg->nodes[i2]->dependencies[cg->nodes[i2]->depMeSize++] = cg->nodes[i];
+	cg->nodes[i2]->dependOnMe[cg->nodes[i2]->depMeSize++] = cg->nodes[i];
       }
       //WAW
       if (isMatch(cg->nodes[i]->write_list, cg->nodes[i2]->write_list)) {
 	cg->nodes[i]->dependencies[cg->nodes[i]->depSize] = cg->nodes[i2];
 	cg->nodes[i]->depSize++;
-	cg->nodes[i2]->dependencies[cg->nodes[i2]->depMeSize++] = cg->nodes[i];
+	cg->nodes[i2]->dependOnMe[cg->nodes[i2]->depMeSize++] = cg->nodes[i];
       }
       i2++;
     }
