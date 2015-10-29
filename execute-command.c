@@ -215,7 +215,7 @@ void execute_nodes(graph_node_t* nodes, int size)
     int status;
     int pid = waitpid(-1, &status, 0);
     int nodeID = getNodeID(pid);
-    //pids[nodeID] = 0; //may be helpful
+    pids[nodeID] = 0; //may be helpful
     finished[nodeID] = true;
     execute_nodes(comg->nodes[nodeID]->dependOnMe, comg->nodes[nodeID]->depMeSize);
     
@@ -335,6 +335,16 @@ bool isMatch(char** a, char** b)
   return false;
 }
 
+bool isAlreadyContained(graph_node_t* nodes, int size, graph_node_t n)
+{
+  int i = 0;
+  for (; i < size; i++) {
+    if (nodes[i] == n)
+      return true;
+  }
+  return false;
+}
+
 void createDependencies(command_graph_t cg)
 {
   int i = 0;
@@ -344,24 +354,14 @@ void createDependencies(command_graph_t cg)
     cg->nodes[i]->dependencies = malloc(sizeof(graph_node_t) * 50);
     cg->nodes[i]->dependOnMe = malloc(sizeof(graph_node_t) * 50);
     while (i2 != i) {
-      //RAW
-      if (isMatch(cg->nodes[i]->read_list, cg->nodes[i2]->write_list)) {
-	cg->nodes[i]->dependencies[cg->nodes[i]->depSize] = cg->nodes[i2];
-	cg->nodes[i]->depSize++;
-	cg->nodes[i2]->dependOnMe[cg->nodes[i2]->depMeSize++] = cg->nodes[i];
-
-      }
-      //WAR
-      if (isMatch(cg->nodes[i]->write_list, cg->nodes[i2]->read_list)) {
-	cg->nodes[i]->dependencies[cg->nodes[i]->depSize] = cg->nodes[i2];
-	cg->nodes[i]->depSize++;
-	cg->nodes[i2]->dependOnMe[cg->nodes[i2]->depMeSize++] = cg->nodes[i];
-      }
-      //WAW
-      if (isMatch(cg->nodes[i]->write_list, cg->nodes[i2]->write_list)) {
-	cg->nodes[i]->dependencies[cg->nodes[i]->depSize] = cg->nodes[i2];
-	cg->nodes[i]->depSize++;
-	cg->nodes[i2]->dependOnMe[cg->nodes[i2]->depMeSize++] = cg->nodes[i];
+      //RAW || WAR || WAW
+      if (isMatch(cg->nodes[i]->read_list, cg->nodes[i2]->write_list) ||
+	  isMatch(cg->nodes[i]->write_list, cg->nodes[i2]->read_list) ||
+	  isMatch(cg->nodes[i]->write_list, cg->nodes[i2]->write_list)) {
+	if (!isAlreadyContained(cg->nodes[i]->dependencies, cg->nodes[i]->depSize, cg->nodes[i2]))
+	  cg->nodes[i]->dependencies[cg->nodes[i]->depSize++] = cg->nodes[i2];
+	if (!isAlreadyContained(cg->nodes[i2]->dependOnMe, cg->nodes[i2]->depMeSize, cg->nodes[i]))
+	  cg->nodes[i2]->dependOnMe[cg->nodes[i2]->depMeSize++] = cg->nodes[i];
       }
       i2++;
     }
