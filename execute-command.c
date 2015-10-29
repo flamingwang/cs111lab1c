@@ -22,6 +22,10 @@ struct graph_node {
   
   graph_node_t* dependencies; // Array of graph node pointers indicating dependencies
 
+  graph_node_t* dependOnMe;
+
+  int depMeSize;
+  
   int depSize;
   
   char** read_list; // Read List
@@ -149,6 +153,7 @@ void execute_commands(command_graph_t cg)
   finished = malloc(cg->size * sizeof(bool));
   pids = malloc(cg->size * sizeof(int));
   int i = 0;
+
   while (!isFinished(finished, cg->size)) {
     i = 0;
     while (i < cg->size) {
@@ -248,16 +253,20 @@ void createDependencies(command_graph_t cg)
       if (isMatch(cg->nodes[i]->read_list, cg->nodes[i2]->write_list)) {
 	cg->nodes[i]->dependencies[cg->nodes[i]->depSize] = cg->nodes[i2];
 	cg->nodes[i]->depSize++;
+	cg->nodes[i2]->dependencies[cg->nodes[i2]->depMeSize++] = cg->nodes[i];
+
       }
       //WAR
       if (isMatch(cg->nodes[i]->write_list, cg->nodes[i2]->read_list)) {
 	cg->nodes[i]->dependencies[cg->nodes[i]->depSize] = cg->nodes[i2];
 	cg->nodes[i]->depSize++;
+	cg->nodes[i2]->dependencies[cg->nodes[i2]->depMeSize++] = cg->nodes[i];
       }
       //WAW
       if (isMatch(cg->nodes[i]->write_list, cg->nodes[i2]->write_list)) {
 	cg->nodes[i]->dependencies[cg->nodes[i]->depSize] = cg->nodes[i2];
 	cg->nodes[i]->depSize++;
+	cg->nodes[i2]->dependencies[cg->nodes[i2]->depMeSize++] = cg->nodes[i];
       }
       i2++;
     }
