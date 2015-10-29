@@ -1,3 +1,13 @@
 sleep 2 && echo slept
 
+echo hi | wc > hi2.txt && echo 1
+
+wc < hi2.txt && echo 2
+
 echo hi | wc < hi2.txt >hi2.txt && echo 3 dep1
+
+wc < hi2.txt && echo 4
+
+echo hi | wc < hi2.txt && echo 5 dpe31
+
+wc < hi2.txt  && echo 6
