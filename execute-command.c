@@ -102,7 +102,7 @@ command_graph_t create_graph_nodes(command_stream_t cstream)
   for(ii=0; ii!= cgraph->size; ii++){
     dump_graph_node(cgraph->nodes[ii]);
     fprintf(stderr, "\n");
-  }
+    }
   //Test info
   
   
@@ -377,7 +377,7 @@ void appendRL(char** rl, char** rl2)
 
 char** createReadList(command_t c)
 {
-  char** readList = malloc(50);
+  char** readList = malloc(50*sizeof(char*));
   switch(c->type) {
   case PIPE_COMMAND:
   case OR_COMMAND:
@@ -400,7 +400,7 @@ char** createReadList(command_t c)
 
 char** createWriteList(command_t c)
 {
-  char** writeList = malloc(50);
+  char** writeList = malloc(50*sizeof(char*));
   switch(c->type) {
   case PIPE_COMMAND:
   case OR_COMMAND:

@@ -1,9 +1,7 @@
-sort -c lecture.m4a
+sleep 2 && echo slept
 
 (ls && echo hi) | wc
 
 echo hi | wc > hi2.txt
 
 wc < hi2.txt
-
-sort -c final.pdf

@@ -1,0 +1,3 @@
+sleep 2 && echo slept
+
+echo hi | wc < hi2.txt >hi2.txt && echo 3 dep1
