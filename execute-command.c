@@ -112,7 +112,7 @@ command_graph_t create_graph_nodes(command_stream_t cstream)
 //For debugging nodes
 void dump_graph_node(graph_node_t gnode){
   int ii;
-  fprintf(stderr, "Command is: %d\n", gnode->cmd->type);
+  fprintf(stderr, "Command type is: %d\n", gnode->cmd->type);
   fprintf(stderr, "Stage is: %d\n",gnode->stage);
   
   
@@ -129,7 +129,25 @@ void dump_graph_node(graph_node_t gnode){
     fprintf(stderr,"%s",gnode->write_list[ii]);
     fprintf(stderr, "\n");
     }
+  
+  fprintf(stderr, "\n");
+  
+  print_dependencies(gnode);
+  
   fprintf(stderr, "---------- \n");
+}
+
+void print_dependencies(graph_node_t gnode){
+  int ii;
+  fprintf(stderr, "------Dependencies--\n");
+  fprintf(stderr,"Index of graph node is: %d\n",gnode->i);
+  for(ii=0; ii!=gnode->depSize; ii++){
+    fprintf(stderr,"Index of dependency: %d\n",gnode->dependencies[ii]->i);
+  }
+  for(ii=0; ii!=gnode->depMeSize; ii++){
+    fprintf(stderr,"Index of dependent: %d\n",gnode->dependOnMe[ii]->i);
+  }
+  fprintf(stderr, "--End dependencies--\n");
 }
 
 // End of Graph Implementation

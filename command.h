@@ -85,6 +85,11 @@ command_graph_t create_graph_nodes(command_stream_t cstream);
 typedef struct graph_node* graph_node_t;
 void dump_graph_node(graph_node_t gnode);
 
+void print_dependencies(graph_node_t gnode);
+void execute_commands(command_graph_t cg);
+void createDependencies(command_graph_t cg);
+
+
 /////////////////////////////////////////////////
 ///////////////  Stack Definition  //////////////
 /////////////////////////////////////////////////
