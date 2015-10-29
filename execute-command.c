@@ -68,7 +68,8 @@ command_graph_t create_graph_nodes(command_stream_t cstream)
   
   command_graph_t cgraph = (command_graph_t) checked_malloc(sizeof(struct command_graph));
   cgraph->size = num_trees;
-  cgraph->nodes = (graph_node_t*) checked_malloc(sizeof(graph_node_t) * cgraph->size);
+  cgraph->nodes = (graph_node_t*) checked_malloc(sizeof(graph_node_t) * (cgraph->size+ 1));
+  cgraph->nodes[cgraph->size] = NULL;
   
   for(ii=0; ii!= cgraph->size; ii++){
     
