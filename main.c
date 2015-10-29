@@ -64,7 +64,7 @@ main (int argc, char **argv)
     createDependencies(cg);
     
     execute_commands(cg);
-    dump_command_graph(cg);
+    //dump_command_graph(cg);
   }
   //TESTING
   

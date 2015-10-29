@@ -1,0 +1,9 @@
+echo aaa
+
+sort -rn lecture.m4a > /dev/null
+
+echo abc > sfoo.txt
+
+echo bbb
+
+cat sfoo.txt
