@@ -1,0 +1,5 @@
+sort -c lecture.m4a
+
+ wc > hi2.txt
+
+wc < hi2.txt
