@@ -1,1 +1,1 @@
-Text of sfoo.txt
+abc

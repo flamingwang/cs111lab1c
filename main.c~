@@ -62,9 +62,8 @@ main (int argc, char **argv)
     command_graph_t cg = create_graph_nodes(command_stream);
     reset_traverse(command_stream);
     createDependencies(cg);
-    
+    dump_command_graph(cg);
     execute_commands(cg);
-    //dump_command_graph(cg);
   }
   //TESTING
   
